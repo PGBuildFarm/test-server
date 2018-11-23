@@ -32,6 +32,13 @@ wget -nv -O server.zip https://github.com/PGBuildFarm/server-code/archive/master
 
 useradd -m -c "buildfarm owner" -s /bin/bash pgbuildfarm
 
+cat >> /home/pgbuildfarm/.bashrc <<EOF
+export PAGER=less
+export LESS=-iMx4
+export PGUSER=pgbuildfarm
+export PGDATABASE=pgbfprod
+EOF
+
 usermod -a -G pgbuildfarm www-data
 
 su -l pgbuildfarm -c "unzip /home/vagrant/server.zip"
@@ -272,3 +279,14 @@ EOF
 
 systemctl restart lighttpd
 
+su - pgbuildfarm <<'EOF'
+
+DIR=`mktemp -d`
+cd $DIR
+wget -nv https://buildfarm.postgresql.org/downloads/sample-data.tgz
+tar -z -xf sample-data.tgz
+psql -q -f load-sample-data.sql pgbfprod
+cd
+rm -rf $DIR
+
+EOF
