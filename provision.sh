@@ -28,7 +28,6 @@ apt-get install -y git
 apt install -y libtemplate-perl libcgi-pm-perl libdbi-perl \
 	libdbd-pg-perl libsoap-lite-perl libtime-parsedate-perl
 
-wget -nv -O server.zip https://github.com/PGBuildFarm/server-code/archive/master.zip
 
 useradd -m -c "buildfarm owner" -s /bin/bash pgbuildfarm
 
@@ -41,8 +40,10 @@ EOF
 
 usermod -a -G pgbuildfarm www-data
 
-su -l pgbuildfarm -c "unzip /home/vagrant/server.zip"
-su -l pgbuildfarm -c "mv server-code-master website"
+#wget -nv -O server.zip https://github.com/PGBuildFarm/server-code/archive/master.zip
+#su -l pgbuildfarm -c "unzip /home/vagrant/server.zip"
+#su -l pgbuildfarm -c "mv server-code-master website"
+su -l pgbuildfarm -c "git clone https://github.com/PGBuildFarm/server-code.git website"
 su -l pgbuildfarm -c "git clone --bare https://git.postgresql.org/git/postgresql.git"
 
 mkdir /home/pgbuildfarm/website/buildlogs
@@ -71,7 +72,7 @@ ls -l /home/pgbuildfarm/website
 
 EOF
 
-DBPW=`md5sum /var/log/messages | sed "s/ .*//"`
+DBPW=`openssl rand -base64 12`
 
 cat >> roles.sql <<EOF
 
