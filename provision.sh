@@ -28,8 +28,13 @@ apt-get install -y git
 apt install -y libtemplate-perl libcgi-pm-perl libdbi-perl \
 	libdbd-pg-perl libsoap-lite-perl libtime-parsedate-perl
 
-
 useradd -m -c "buildfarm owner" -s /bin/bash pgbuildfarm
+
+# these lines cause some permissions problems. comment out /remove if necessary
+# see also https://github.com/ScoutEngineeringDay/SED-Deployments/wiki/Editing-Files-within-Vagrant-using-local-Atom-Text-Editor
+rm -rf /vagrant/pgbuildfarm
+mv /home/pgbuildfarm /vagrant
+ln -s /vagrant/pgbuildfarm /home
 
 cat >> /home/pgbuildfarm/.bashrc <<EOF
 export PAGER=less
@@ -44,7 +49,11 @@ usermod -a -G pgbuildfarm www-data
 #su -l pgbuildfarm -c "unzip /home/vagrant/server.zip"
 #su -l pgbuildfarm -c "mv server-code-master website"
 su -l pgbuildfarm -c "git clone https://github.com/PGBuildFarm/server-code.git website"
-su -l pgbuildfarm -c "git clone --bare https://git.postgresql.org/git/postgresql.git"
+
+mkdir /home/pgblocal
+chown pgbuildfarm:www-data /home/pgblocal
+
+su -l pgbuildfarm -c "git clone --bare https://git.postgresql.org/git/postgresql.git /home/pgblocal/postgresql.git"
 
 mkdir /home/pgbuildfarm/website/buildlogs
 mkdir /home/pgbuildfarm/website/weblogs
@@ -72,7 +81,7 @@ ls -l /home/pgbuildfarm/website
 
 EOF
 
-DBPW=`openssl rand -base64 12`
+DBPW=`openssl rand -hex 12`
 
 cat >> roles.sql <<EOF
 
@@ -166,7 +175,7 @@ $min_web_script_version = "4.4";
 $captcha_invis_pubkey = '';
 $captcha_invis_privkey = '';
 
-$local_git_clone = '/home/pgbuildfarm/postgresql.git';
+$local_git_clone = '/home/pgblocal/postgresql.git';
 
 1;
 
