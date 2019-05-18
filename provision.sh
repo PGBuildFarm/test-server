@@ -83,6 +83,8 @@ EOF
 
 DBPW=`openssl rand -hex 12`
 
+# use generaic roles for sysadmin, dba - these would normally be real users
+
 cat >> roles.sql <<EOF
 
 create user pgbuildfarm;
@@ -90,12 +92,12 @@ create user pgbfweb password '$DBPW';
 create user reader;
 create role admin;
 create user bfarchive;
-create user adunstan;
-create user sfrost;
+create user dba;
+create user sysadm;
 grant reader to bfarchive;
 grant postgres to admin;
-grant pgbfweb, pgbuildfarm to adunstan, sfrost;
-grant admin to sfrost;
+grant pgbfweb, pgbuildfarm to dba, sysadm;
+grant admin to sysadm;
 create user radmin;
 create user rssfeed;
 
@@ -245,11 +247,13 @@ host    all             all             ::1/128                 scram-sha-256
 EOF
 
 
+# note use of generic sysadmin and dba ids.
+
 cat > /etc/postgresql/11/main/pg_ident.conf <<'EOF'
 peer www-data pgbfweb
-peer adunstan pgbuildfarm
+peer dba pgbuildfarm
 peer pgbuildfarm pgbuildfarm
-peer sfrost pgbuildfarm
+peer sysadmin pgbuildfarm
 peer root pgbuildfarm
 peer /^(.*)$    \1
 EOF
