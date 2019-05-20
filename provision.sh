@@ -1,7 +1,11 @@
 #!/bin/sh
 
+export DEBIAN_FRONTEND=noninteractive
+
 echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=yes apt-key add -
+
+
 apt-get update -y
 
 apt-get install -y postgresql-11\
@@ -25,8 +29,8 @@ update-alternatives --set editor /usr/bin/vim.basic
 #apt-get install -y emacs-nox
 apt-get install -y git
 
-apt install -y libtemplate-perl libcgi-pm-perl libdbi-perl \
-	libdbd-pg-perl libsoap-lite-perl libtime-parsedate-perl
+apt-get install -y libtemplate-perl libcgi-pm-perl libdbi-perl \
+	libdbd-pg-perl libsoap-lite-perl libtime-parsedate-perl libxml-rss-perl
 
 useradd -m -c "buildfarm owner" -s /bin/bash pgbuildfarm
 
@@ -50,10 +54,12 @@ usermod -a -G pgbuildfarm www-data
 #su -l pgbuildfarm -c "mv server-code-master website"
 su -l pgbuildfarm -c "git clone https://github.com/PGBuildFarm/server-code.git website"
 
+su -l pgbuildfarm -c "cd website && make syncheck" || exit
+
 mkdir /home/pgblocal
 chown pgbuildfarm:www-data /home/pgblocal
 
-su -l pgbuildfarm -c "git clone --bare https://git.postgresql.org/git/postgresql.git /home/pgblocal/postgresql.git"
+su -l pgbuildfarm -c "git clone -q --bare https://git.postgresql.org/git/postgresql.git /home/pgblocal/postgresql.git"
 
 mkdir /home/pgbuildfarm/website/buildlogs
 mkdir /home/pgbuildfarm/website/weblogs
@@ -62,6 +68,9 @@ chown pgbuildfarm:www-data  /home/pgbuildfarm/website/weblogs
 chmod g+w /home/pgbuildfarm/website/weblogs /home/pgbuildfarm/website/buildlogs
 
 ls -l /home/pgbuildfarm/website
+
+
+# what's on the actual server
 
 : <<'EOF'
 
@@ -83,7 +92,7 @@ EOF
 
 DBPW=`openssl rand -hex 12`
 
-# use generaic roles for sysadmin, dba - these would normally be real users
+# use generic roles for sysadmin, dba - these would normally be real users
 
 cat >> roles.sql <<EOF
 
@@ -126,11 +135,14 @@ use vars
        $local_git_clone
        $status_from $register_from $reminders_from $alerts_from
        $status_url
-       $skip_mail $skip_captcha
+       $skip_mail
+	   $skip_rss
+	   $skip_captcha
        );
 
 
 $skip_mail = 1;
+$skip_rss = 1;
 $skip_captcha = 1;
 
 $status_url = undef; # 'https://buildfarm.postgresql.org';
@@ -240,9 +252,6 @@ local   all             all                                     peer map=peer
 # IPv4 local connections:
 host    all             all             127.0.0.1/32            scram-sha-256
 # IPv6 local connections:
-host    all             all             ::1/128                 scram-sha-256
-#
-host    all             all             127.0.0.1/32            scram-sha-256
 host    all             all             ::1/128                 scram-sha-256
 EOF
 
