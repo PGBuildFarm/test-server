@@ -34,12 +34,6 @@ apt-get install -y libtemplate-perl libcgi-pm-perl libdbi-perl \
 
 useradd -m -c "buildfarm owner" -s /bin/bash pgbuildfarm
 
-# these lines cause some permissions problems. comment out /remove if necessary
-# see also https://github.com/ScoutEngineeringDay/SED-Deployments/wiki/Editing-Files-within-Vagrant-using-local-Atom-Text-Editor
-rm -rf /vagrant/pgbuildfarm
-mv /home/pgbuildfarm /vagrant
-ln -s /vagrant/pgbuildfarm /home
-
 cat >> /home/pgbuildfarm/.bashrc <<EOF
 export PAGER=less
 export LESS=-iMx4
@@ -49,10 +43,15 @@ EOF
 
 usermod -a -G pgbuildfarm www-data
 
-#wget -nv -O server.zip https://github.com/PGBuildFarm/server-code/archive/master.zip
-#su -l pgbuildfarm -c "unzip /home/vagrant/server.zip"
-#su -l pgbuildfarm -c "mv server-code-master website"
-su -l pgbuildfarm -c "git clone https://github.com/PGBuildFarm/server-code.git website"
+# If the directory exists, it's been cloned outside the VM, so link it in.
+# Otherwise clone it inside the VM. If linking it some of the chown/chmod
+# commands might fail ...
+if [ -d /vagrant/website ]
+then
+	ln -s /vagrant/website /home/pgbuildfarm
+else
+	su -l pgbuildfarm -c "git clone https://github.com/PGBuildFarm/server-code.git website"
+fi
 
 su -l pgbuildfarm -c "cd website && make syncheck" || exit
 
@@ -94,7 +93,7 @@ DBPW=`openssl rand -hex 12`
 
 # use generic roles for sysadmin, dba - these would normally be real users
 
-cat >> roles.sql <<EOF
+cat > /tmp/roles.sql <<EOF
 
 create user pgbuildfarm;
 create user pgbfweb password '$DBPW';
@@ -113,7 +112,7 @@ create user rssfeed;
 EOF
 
 
-su -l postgres -c "psql -f /home/vagrant/roles.sql"
+su -l postgres -c "psql -f /tmp/roles.sql"
 
 su -l postgres -c "createdb -O pgbuildfarm -T template0 -E SQL_ASCII pgbfprod"
 
@@ -138,12 +137,15 @@ use vars
        $skip_mail
 	   $skip_rss
 	   $skip_captcha
+	   $ignore_branches_of_interest
        );
 
 
 $skip_mail = 1;
 $skip_rss = 1;
 $skip_captcha = 1;
+$ignore_branches_of_interest = 1;
+
 
 $status_url = undef; # 'https://buildfarm.postgresql.org';
 
