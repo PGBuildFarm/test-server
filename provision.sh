@@ -2,7 +2,7 @@
 
 export DEBIAN_FRONTEND=noninteractive
 
-echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=yes apt-key add -
 
 
@@ -24,10 +24,9 @@ EOF
 
 systemctl restart postgresql
 
-apt-get install -y vim
-update-alternatives --set editor /usr/bin/vim.basic
 #apt-get install -y emacs-nox
-apt-get install -y git
+apt-get install -y vim git make
+update-alternatives --set editor /usr/bin/vim.basic
 
 apt-get install -y libtemplate-perl libcgi-pm-perl libdbi-perl \
 	libdbd-pg-perl libsoap-lite-perl libtime-parsedate-perl libxml-rss-perl
