@@ -43,8 +43,8 @@ EOF
 usermod -a -G pgbuildfarm www-data
 
 # If the directory exists, it's been cloned outside the VM, so link it in.
-# Otherwise clone it inside the VM. If linking it some of the chown/chmod
-# commands might fail ...
+# Otherwise clone it here. If linking it, some of the chown/chmod
+# commands might fail, but linking makes it possible to edit outside the VM
 if [ -d /vagrant/website ]
 then
 	ln -s /vagrant/website /home/pgbuildfarm
