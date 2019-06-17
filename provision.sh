@@ -1,5 +1,13 @@
 #!/bin/sh
 
+if [ -n "$2" ]
+then
+	cat >> /etc/hosts <<-EOF
+	$1 bfserver
+	$2 pgwebserver
+	EOF
+fi
+
 export DEBIAN_FRONTEND=noninteractive
 
 echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" > /etc/apt/sources.list.d/pgdg.list
@@ -28,8 +36,11 @@ systemctl restart postgresql
 apt-get install -y vim git make
 update-alternatives --set editor /usr/bin/vim.basic
 
-apt-get install -y libtemplate-perl libcgi-pm-perl libdbi-perl \
-	libdbd-pg-perl libsoap-lite-perl libtime-parsedate-perl libxml-rss-perl
+apt-get install -y equivs libtemplate-perl libcgi-pm-perl libdbi-perl \
+		libdbd-pg-perl libsoap-lite-perl libtime-parsedate-perl libxml-rss-perl
+
+equivs-build /vagrant/pginfra-wrap-buildfarm
+dpkg -i pginfra-wrap-buildfarm_1_all.deb
 
 useradd -m -c "buildfarm owner" -s /bin/bash pgbuildfarm
 
