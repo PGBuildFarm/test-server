@@ -8,36 +8,7 @@ then
 	EOF
 fi
 
-export DEBIAN_FRONTEND=noninteractive
-
-echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=yes apt-key add -
-
-
-apt-get update -y
-
-apt-get install -y postgresql-11\
-		postgresql-contrib-11 \
-		postgresql-plperl-11 \
-		postgresql-11-dbgsym \
-		lighttpd \
-		zip unzip
-# id
-# pw
-
-cat >> /etc/postgresql/11/main/conf.d/buildfarm.conf <<EOF
-listen_addresses = '*'
-password_encryption = 'scram-sha-256'
-EOF
-
-systemctl restart postgresql
-
-#apt-get install -y emacs-nox
-apt-get install -y vim git make
-update-alternatives --set editor /usr/bin/vim.basic
-
-apt-get install -y equivs libtemplate-perl libcgi-pm-perl libdbi-perl \
-		libdbd-pg-perl libsoap-lite-perl libtime-parsedate-perl libxml-rss-perl
+# box should be already provisioned with required packages
 
 equivs-build /vagrant/pginfra-wrap-buildfarm
 dpkg -i pginfra-wrap-buildfarm_1_all.deb
