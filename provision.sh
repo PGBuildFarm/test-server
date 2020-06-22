@@ -95,9 +95,19 @@ EOF
 
 su -l postgres -c "psql -f /tmp/roles.sql"
 
-su -l postgres -c "createdb -O pgbuildfarm -T template0 -E SQL_ASCII pgbfprod"
+su -l postgres -c "createdb -O pgbuildfarm -T template0 -E en_US.UTF8 pgbfprod"
 
 su -l postgres -c "psql -f /home/pgbuildfarm/website/schema/bfwebdb.sql pgbfprod"
+
+
+cat >> /etc/postgresql/12/main/conf.d/buildfarm.conf <<-EOF
+	shared_preload_libraries = 'pg_partman_bgw'
+	pg_partman_bgw.interval = 3600
+	pg_partman_bgw.role = 'pgbuildfarm'
+	pg_partman_bgw.dbname = 'pgbfprod'
+EOF
+
+systemctl restart postgresql
 
 cat >> /home/pgbuildfarm/website/BuildFarmWeb.pl <<'EOF'
 
