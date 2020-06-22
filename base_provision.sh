@@ -14,14 +14,16 @@ wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo APT_
 
 apt-get update -y
 
-apt-get install -y postgresql-11\
-		postgresql-contrib-11 \
-		postgresql-plperl-11 \
-		postgresql-11-dbgsym \
+apt-get install -y postgresql-12\
+		postgresql-contrib-12 \
+		postgresql-plperl-12 \
+		postgresql-12-dbgsym \
+		postgresql-12-partman \
+		postgresql-12-partman-dbgsym \
 		lighttpd \
 		zip unzip
 
-cat >> /etc/postgresql/11/main/conf.d/buildfarm.conf <<EOF
+cat >> /etc/postgresql/12/main/conf.d/buildfarm.conf <<EOF
 listen_addresses = '*'
 password_encryption = 'scram-sha-256'
 EOF
