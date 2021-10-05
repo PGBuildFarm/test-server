@@ -1,3 +1,4 @@
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 
 # default value, override when calling vagrant
 ENV['BFIP'] ||= "192.168.10.60"

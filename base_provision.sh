@@ -36,7 +36,8 @@ update-alternatives --set editor /usr/bin/vim.basic
 
 # required for buildfarm server
 apt-get install -y equivs libtemplate-perl libcgi-pm-perl libdbi-perl \
-		libdbd-pg-perl libsoap-lite-perl libtime-parsedate-perl libxml-rss-perl
+	libdbd-pg-perl libsoap-lite-perl libtime-parsedate-perl \
+	libxml-rss-perl libcrypt-urandom-perl
 
 # required for pgweb server
 apt-get install -y python3-pip python3-psycopg2 python3-yaml

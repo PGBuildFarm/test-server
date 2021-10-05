@@ -4,7 +4,8 @@ Section: base
 Priority: optional
 Architecture: all
 Depends: libtemplate-perl, libcgi-pm-perl, libdbi-perl, libdbd-pg-perl,
- libsoap-lite-perl, libtime-parsedate-perl, libxml-rss-perl
+ libsoap-lite-perl, libtime-parsedate-perl, libxml-rss-perl,
+ libcrypt-urandom-perl
 Maintainer: Webmaster <webmaster@postgresql.org>
 Description: PostgreSQL Infrastructure wrapper package for the buildfarm server.
  Does not include the actual buildfarm server code, this is just to make

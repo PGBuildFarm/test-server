@@ -95,7 +95,9 @@ EOF
 
 su -l postgres -c "psql -f /tmp/roles.sql"
 
-su -l postgres -c "createdb -O pgbuildfarm -T template0 -E en_US.UTF8 pgbfprod"
+su -l postgres -c "createdb -O pgbuildfarm -T template0 -l en_US.UTF8 pgbfprod"
+
+
 
 su -l postgres -c "psql -f /home/pgbuildfarm/website/schema/bfwebdb.sql pgbfprod"
 
@@ -234,7 +236,7 @@ cat >>/etc/cron.d/pg-analyze  <<'EOF'
 41 4 * * * postgres psql -d pgbfprod -q -c 'analyze;'
 EOF
 
-cat > /etc/postgresql/11/main/pg_hba.conf <<'EOF'
+cat > /etc/postgresql/12/main/pg_hba.conf <<'EOF'
 # Database administrative login by Unix domain socket
 local   all             postgres                                peer
 
@@ -251,7 +253,7 @@ EOF
 
 # note use of generic sysadmin and dba ids.
 
-cat > /etc/postgresql/11/main/pg_ident.conf <<'EOF'
+cat > /etc/postgresql/12/main/pg_ident.conf <<'EOF'
 peer www-data pgbfweb
 peer dba pgbuildfarm
 peer pgbuildfarm pgbuildfarm
@@ -301,6 +303,7 @@ DIR=`mktemp -d`
 cd $DIR
 wget -nv https://buildfarm.postgresql.org/downloads/sample-data.tgz
 tar -z -xf sample-data.tgz
+sed -i 's/$/\t\\N/' partman_part_config.data
 psql -q -f load-sample-data.sql pgbfprod
 cd
 rm -rf $DIR
