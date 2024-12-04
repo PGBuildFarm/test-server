@@ -41,8 +41,8 @@ chown pgbuildfarm:www-data /home/pgblocal
 
 su -l pgbuildfarm -c "git clone -q --bare https://git.postgresql.org/git/postgresql.git /home/pgblocal/postgresql.git"
 
-mkdir /home/pgbuildfarm/website/buildlogs
-mkdir /home/pgbuildfarm/website/weblogs
+mkdir -p /home/pgbuildfarm/website/buildlogs
+mkdir -p /home/pgbuildfarm/website/weblogs
 chown pgbuildfarm:pgbuildfarm  /home/pgbuildfarm/website/buildlogs
 chown pgbuildfarm:www-data  /home/pgbuildfarm/website/weblogs
 chmod g+w /home/pgbuildfarm/website/weblogs /home/pgbuildfarm/website/buildlogs
@@ -97,16 +97,17 @@ su -l postgres -c "psql -f /tmp/roles.sql"
 
 su -l postgres -c "createdb -O pgbuildfarm -T template0 -l en_US.UTF8 pgbfprod"
 
+wget -q -P /tmp https://buildfarm.postgresql.org/downloads/bfwebdb.sql
+
+su -l postgres -c "psql -f /tmp/bfwebdb.sql pgbfprod"
 
 
-su -l postgres -c "psql -f /home/pgbuildfarm/website/schema/bfwebdb.sql pgbfprod"
-
-
-cat >> /etc/postgresql/12/main/conf.d/buildfarm.conf <<-EOF
+cat >> /etc/postgresql/17/main/conf.d/buildfarm.conf <<-EOF
 	shared_preload_libraries = 'pg_partman_bgw'
 	pg_partman_bgw.interval = 3600
 	pg_partman_bgw.role = 'pgbuildfarm'
 	pg_partman_bgw.dbname = 'pgbfprod'
+        wal_level = 'logical'
 EOF
 
 systemctl restart postgresql
@@ -236,7 +237,7 @@ cat >>/etc/cron.d/pg-analyze  <<'EOF'
 41 4 * * * postgres psql -d pgbfprod -q -c 'analyze;'
 EOF
 
-cat > /etc/postgresql/12/main/pg_hba.conf <<'EOF'
+cat > /etc/postgresql/17/main/pg_hba.conf <<'EOF'
 # Database administrative login by Unix domain socket
 local   all             postgres                                peer
 
@@ -253,7 +254,7 @@ EOF
 
 # note use of generic sysadmin and dba ids.
 
-cat > /etc/postgresql/12/main/pg_ident.conf <<'EOF'
+cat > /etc/postgresql/17/main/pg_ident.conf <<'EOF'
 peer www-data pgbfweb
 peer dba pgbuildfarm
 peer pgbuildfarm pgbuildfarm
@@ -295,16 +296,19 @@ $HTTP["scheme"] =~ "https?" {
 
 EOF
 
+systemctl enable lighttpd
 systemctl restart lighttpd
 
 su - pgbuildfarm <<'EOF'
 
 DIR=`mktemp -d`
 cd $DIR
+echo "DIR=$DIR"
 wget -nv https://buildfarm.postgresql.org/downloads/sample-data.tgz
 tar -z -xf sample-data.tgz
-sed -i 's/$/\t\\N/' partman_part_config.data
-psql -q -f load-sample-data.sql pgbfprod
+# sed -i 's/$/\t\\N/' partman_part_config.data
+#sed -i '/partman.part_config/ s/^/-- /' load-sample-data.sql 
+psql -q -f load-sample-data.sql pgbfprod || exit
 cd
 rm -rf $DIR
 

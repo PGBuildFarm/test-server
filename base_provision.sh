@@ -8,22 +8,21 @@ fi
 
 export DEBIAN_FRONTEND=noninteractive
 
-echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=yes apt-key add -
-
+apt-get install -y postgresql-common
+/usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
 
 apt-get update -y
 
-apt-get install -y postgresql-12\
-		postgresql-contrib-12 \
-		postgresql-plperl-12 \
-		postgresql-12-dbgsym \
-		postgresql-12-partman \
-		postgresql-12-partman-dbgsym \
+apt-get install -y postgresql-17\
+		postgresql-contrib-17 \
+		postgresql-plperl-17 \
+		postgresql-17-dbgsym \
+		postgresql-17-partman \
+		postgresql-17-partman-dbgsym \
 		lighttpd \
 		zip unzip
 
-cat >> /etc/postgresql/12/main/conf.d/buildfarm.conf <<EOF
+cat >> /etc/postgresql/17/main/conf.d/buildfarm.conf <<EOF
 listen_addresses = '*'
 password_encryption = 'scram-sha-256'
 EOF
