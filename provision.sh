@@ -66,7 +66,6 @@ ls -l /home/pgbuildfarm/website
  radmin      |                                   | {}
  reader      |                                   | {}
  rssfeed     |                                   | {}
- sfrost      |                                   | {pgbfweb,pgbuildfarm,admin}
 
 EOF
 
