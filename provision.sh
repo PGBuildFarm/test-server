@@ -98,6 +98,9 @@ su -l postgres -c "createdb -O pgbuildfarm -T template0 -l en_US.UTF8 pgbfprod"
 
 wget -q -P /tmp https://buildfarm.postgresql.org/downloads/bfwebdb.sql
 
+# disable creation of publication - we're not supporting an archive server here
+sed -i -e '/pub_bfarchive/ s/^/-- /' /tmp/bfwebdb.sql
+
 su -l postgres -c "psql -f /tmp/bfwebdb.sql pgbfprod"
 
 
