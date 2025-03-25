@@ -6,10 +6,10 @@ ENV['PGIP'] ||= "192.168.10.59"
 
 # default box
 # override with bfbase if installed
-ENV['VGBOX'] ||= "debian/contrib-stretch64"
+ENV['VGBOX'] ||= "bento/debian-12"
 
 Vagrant.configure("2") do |config|
-  config.vm.box = ENV['VGBOX'] ||= "debian/contrib-stretch64"
+  config.vm.box = ENV['VGBOX'] ||= "bento/debian-12"
   config.vm.synced_folder ".", "/vagrant", type: "sshfs"
   # this provisioner should basically be a no-op if using
   # a bfbase box that's been previously set up
